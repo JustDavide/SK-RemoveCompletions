@@ -1,0 +1,49 @@
+# Depends on: SKBee
+
+on load:
+    if {bannedCommands::*} is not set:
+        set {bannedCommands::*} to "/version", "/ver", "/pl", "/minecraft:me" and "/minecraft:help"
+
+on command:
+    loop {bannedCommands::*}:
+        if sender is console:
+            stop
+        if player is op:
+            stop
+        if "/" + command is loop-value:
+            send "&8[&4&lSECURITY&8] &7You may not use this command"
+            cancel event
+
+
+on tab complete:
+    if player is op:
+        stop
+    loop {bannedCommands::*}:
+        if event-string is loop-value:
+            clear tab completions
+
+command /security <text> [<text>]:
+    permission: security.addbanned
+    permission message: &c&lSecurity &7You don't have enough permissions to use this command
+    trigger:
+        if arg 1 is "add":
+            add arg 2 to {bannedCommands::*}
+            send "&8[&4&lSECURITY&8] &7Added %arg 2% to the banned commands" to player
+        if arg 1 is "remove":
+            remove arg 2 from {bannedCommands::*}
+            send "&8[&4&lSECURITY&8] &7Removed %arg 2% to the banned commands" to player
+        if arg 1 is "clear":
+            delete {bannedCommands::*}
+            send "&8[&4&lSECURITY&8] &7List cleared" to player
+        if arg 1 is "list":
+            if {bannedCommands::*} is not set:
+                send "&8[&4&lSECURITY&8] &7There are currently no banned commands" to player
+                send "&8[&4&lSECURITY&8] &7Add one by using /security add <command>" to player
+                stop
+            send "&8-- &cBanned Commands &8--" to player
+            send join {bannedCommands::*} with " " to player
+            send "&eTip: &7Use /security add/remove <command> to edit this list!" to player
+            send "&eExample: /security remove /version" to player
+
+on tab complete of "/security":
+    set tab completions for position 1 to "add", "remove", "clear" and "list"
